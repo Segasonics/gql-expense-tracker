@@ -1,4 +1,5 @@
 import Transaction from "../models/transaction.model.js";
+import User from "../models/user.model.js";
 
 const transactionResolver ={
     Query:{
@@ -7,14 +8,14 @@ const transactionResolver ={
                 if(!context.getUser()) throw new Error("Unauthorized");
                 const userId = await context.getUser()._id;
 
-                const transactions = await Transaction.find(userId);
+                const transactions = await Transaction.find({userId});
                 return transactions;
             } catch (err) {
                 console.error("Error getting transactions : ",err);
                 throw new Error("Error getting transactions")
             }
         },
-        transaction:async(_,{transactionId},)=>{
+        transaction:async(_,{transactionId})=>{
             try {
                 const transaction = await Transaction.findById(transactionId);
                 return transaction;
@@ -30,10 +31,10 @@ const transactionResolver ={
             try {
                 const newTransaction = new Transaction({
                     ...input,
-                    userId:context.getUser()._id
+                    userId:context.getUser()._id,
                 })
                 await newTransaction.save();
-                return newTransaction
+                return newTransaction;
             } catch (err) {
                 console.log("Error creating transaction:",err);
                 throw new Error("Error creating transaction")
@@ -58,6 +59,18 @@ const transactionResolver ={
             }
         }
     },
+    Transaction: {
+		user: async (parent) => {
+			const userId = parent.userId;
+			try {
+				const user = await User.findById(userId);
+				return user;
+			} catch (err) {
+				console.error("Error getting user:", err);
+				throw new Error("Error getting user");
+			}
+		},
+	},
 };
 
 export default transactionResolver;
