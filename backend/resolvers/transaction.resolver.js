@@ -24,6 +24,34 @@ const transactionResolver ={
                 throw new Error("Error getting transaction");
             }
         },
+        categoryStatistics:async(_,__,context)=>{
+               if(!context.getUser()) throw new Error("Unauthorized");//If user is not login throw unauthorized
+
+               const userId = context.getUser()._id;
+               const transactions = await Transaction.find({userId});
+
+               const categoryMap ={};
+
+               //Example code: Lets say we have these transaction in our database
+               //const transactions=[
+               //{ category:"expense",amount :50 },
+               //{ category:"expense",amount :75 },
+               //{ category:"investment",amount :100 },
+               //{ category:"saving",amount :20 },
+               //]
+
+               transactions.forEach((transaction)=>{
+                 if(!categoryMap[transaction.category]){
+                    categoryMap[transaction.category]=0;
+                 }
+                 categoryMap[transaction.category]+=transaction.amount;
+        });
+
+        //here we convert the data to somewhat look like this
+        //category ={expense:125; investment:100, saving:20}
+        return Object.entries(categoryMap).map(([category,totalAmount])=>({category,totalAmount}));
+        //return[{ category:"expense",totalAmount:125}, {catetory:"investment",totalAmount:100}]
+        }
 
     },
     Mutation:{
