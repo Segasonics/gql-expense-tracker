@@ -15,9 +15,12 @@ import { configurePassport } from "./passport/passport.config.js";
 
 import mergedResolvers from "./resolvers/index.js";
 import mergedTypeDefs from "./typeDefs/index.js";
+import job from "./cron.js";
 
 dotenv.config();
 configurePassport();
+
+job.start();
 
 const __dirname =path.resolve();//this basically means root of our application
 // Required logic for integrating with Express
