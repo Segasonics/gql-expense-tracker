@@ -28,7 +28,7 @@ const app = express();
 
 const httpServer = http.createServer(app);
 
-const MongoDBStore = connectMongo(session);
+const MongoDBStore = connectMongo(session);//In this line of code we are using connect-mongodb-session to store session data in the "sessions" collection
 
 const store = new MongoDBStore({
     uri:process.env.MONGO_URI,
@@ -38,12 +38,13 @@ const store = new MongoDBStore({
 store.on("error",(err)=>console.log(err));
 
 app.use(
+    //This tells Express to use MongoDB for storing session data.
     session({
         secret:process.env.SESSION_SECRET,
         resave:false,//this option specifies whether to save the session to the store on every request
-        saveUninitialized:false, //this option specifies whether to save uinitialized sessions
+        saveUninitialized:false, //this option specifies whether to save uinitialized sessions ||// Don't create empty sessions
         cookie:{
-            maxAge:1000*60*60*24*7,
+            maxAge:1000*60*60*24*7,// Expire in 7 days
             httpOnly:true, //this option prevents the cross-site scripting (xss) attacks
         },
         store:store
@@ -51,6 +52,7 @@ app.use(
 )
  
 app.use(passport.initialize());
+// ensures that Passport can store authentication data in the session.
 app.use(passport.session());
 
 const server = new ApolloServer({
@@ -75,7 +77,7 @@ app.use(
     //an Apollo Server instance and optional configuration options
 
     expressMiddleware(server,{
-        context:async({req,res})=>buildContext({req,res}),
+        context:async({req,res})=>buildContext({req,res}),//If a user is logged in, buildContext will attach req.user (user details) to the GraphQL context.
     }),
 );
 
